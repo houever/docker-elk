@@ -127,7 +127,14 @@ services:
       elk:
         ipv4_address: 172.25.0.7
     restart: always
-
+  elasticsearch-head:
+    image: mobz/elasticsearch-head:5
+    container_name: head
+    ports:
+      - 9100:9100
+    volumes:
+      - ./es-head/Gruntfile.js:/usr/src/app/Gruntfile.js
+      - ./es-head/app.js:/usr/src/app/_site/app.js
 
 volumes:
   esdata:
