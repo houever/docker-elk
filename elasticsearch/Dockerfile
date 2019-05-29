@@ -1,4 +1,4 @@
-FROM docker.elastic.co/elasticsearch/elasticsearch-platinum:6.4.2
+FROM docker.elastic.co/elasticsearch/elasticsearch:6.4.2
 
 LABEL maintainer="349514537@qq.com"
 
