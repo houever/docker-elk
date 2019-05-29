@@ -1,3 +1,3 @@
-FROM docker.elastic.co/beats/metricbeat:6.2.2
+FROM docker.elastic.co/beats/metricbeat:6.4.2
 
-LABEL maintainer="genius840215@163.com"
+LABEL maintainer="349514537@qq.com"

@@ -1,6 +1,6 @@
-FROM docker.elastic.co/elasticsearch/elasticsearch-platinum:6.2.2
+FROM docker.elastic.co/elasticsearch/elasticsearch-platinum:6.4.2
 
-LABEL maintainer="genius840215@163.com"
+LABEL maintainer="349514537@qq.com"
 
 COPY ./config/elasticsearch.yml /usr/share/elasticsearch/conifg/elasticsearch.yml
 

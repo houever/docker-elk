@@ -1,3 +1,3 @@
 FROM mariadb
 
-LABEL maintainer="genius840215@163.com"
+LABEL maintainer="349514537@qq.com"
