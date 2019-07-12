@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 
 services:
 
@@ -7,14 +7,18 @@ services:
       context: elasticsearch/
     container_name: elasticsearch
     volumes:
-      - esdata:/usr/share/elasticsearch/data
-      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+      - ./data/elasticsearch/data:/usr/share/elasticsearch/data
+      - ./data/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+      - ./data/elasticsearch/logs:/usr/share/elasticsearch/logs
     ports:
       - "9200:9200"
       - "9300:9300"
     environment:
-      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
-      ELASTIC_PASSWORD: "123456"
+      - cluster.name=elasticsearch
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - "ELASTIC_PASSWORD"=123456
     networks:
       elk:
         ipv4_address: 172.25.0.2
@@ -95,38 +99,7 @@ services:
       - kibana
     restart: always
 
-  mysql:
-    build:
-      context: mariadb/
-    container_name: mysql
-    volumes:
-      - mysqldata:/var/lib/mysql
-      - ./mariadb/conf.d:/etc/mysql/conf.d:ro
-      - ./mariadb/my.cnf:/etc/mysql/my.cnf:ro
-      -  /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime:ro
-      - mysqllog:/var/log/mysql
-    ports:
-      - "3306:3306"
-    networks:
-      elk:
-        ipv4_address: 172.25.0.6
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-    restart: always
 
-  redis:
-    build:
-      context: redis/
-    container_name: redis
-    volumes:
-      - redisdata:/data
-      -  /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime:ro
-    ports:
-      - "6379:6379"
-    networks: 
-      elk:
-        ipv4_address: 172.25.0.7
-    restart: always
   elasticsearch-head:
     image: mobz/elasticsearch-head:5
     container_name: head
@@ -136,14 +109,38 @@ services:
       - ./es-head/Gruntfile.js:/usr/src/app/Gruntfile.js
       - ./es-head/app.js:/usr/src/app/_site/app.js
 
+  skywalking-oap:
+    image: wutang/skywalking-oap:6.1.0
+    container_name: skywalking-oap
+    networks:
+      - sc-net
+    depends_on:
+      - elasticsearch
+    links:
+      - elasticsearch
+    restart: always
+    ports:
+      - 11800:11800
+      - 12800:12800
+    volumes:
+      - ./data/skywalking/config:/apache-skywalking-apm-bin/config:ro
+
+  skywalking-ui:
+    image: wutang/skywalking-ui:6.1.0
+    container_name: skywalking-ui
+    networks:
+      - sc-net
+    depends_on:
+      - skywalking-oap
+    links:
+      - skywalking-oap
+    restart: always
+    ports:
+      - 8080:8080
+    environment:
+      collector.ribbon.listOfServers: skywalking-oap:12800
 volumes:
   esdata:
-    driver: local
-  mysqldata:
-    driver: local
-  mysqllog:
-    driver: local
-  redisdata:
     driver: local
   
 
