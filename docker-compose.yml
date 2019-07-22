@@ -7,8 +7,8 @@ services:
       context: elasticsearch/
     container_name: elasticsearch
     volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
       - ./data/elasticsearch/data:/usr/share/elasticsearch/data
-      - ./data/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
       - ./data/elasticsearch/logs:/usr/share/elasticsearch/logs
     ports:
       - "9200:9200"
@@ -18,7 +18,7 @@ services:
       - bootstrap.memory_lock=true
       - xpack.security.enabled=false
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
-      - "ELASTIC_PASSWORD"=123456
+      - "ELASTIC_PASSWORD=123456"
     networks:
       elk:
         ipv4_address: 172.25.0.2
@@ -32,7 +32,6 @@ services:
       - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
       - ./logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml:ro
       - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
-      - mysqllog:/xlogs/mysqllog:ro
     ports:
       - "5000:5000"
     environment:
@@ -94,7 +93,7 @@ services:
       - "443:443"
     networks:
       elk:
-        ipv4_address: 172.25.0.5
+        ipv4_address: 172.25.0.9
     depends_on:
       - kibana
     restart: always
@@ -113,7 +112,7 @@ services:
     image: wutang/skywalking-oap:6.1.0
     container_name: skywalking-oap
     networks:
-      - sc-net
+      - elk
     depends_on:
       - elasticsearch
     links:
@@ -129,7 +128,7 @@ services:
     image: wutang/skywalking-ui:6.1.0
     container_name: skywalking-ui
     networks:
-      - sc-net
+      - elk
     depends_on:
       - skywalking-oap
     links:
