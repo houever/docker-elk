@@ -1,11 +1,10 @@
 version: '3'
 
 services:
-
   elasticsearch:
     build:
       context: elasticsearch/
-    container_name: elasticsearch
+    container_name: es
     volumes:
       - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
       - ./data/elasticsearch/data:/usr/share/elasticsearch/data
@@ -14,14 +13,10 @@ services:
       - "9200:9200"
       - "9300:9300"
     environment:
-      - cluster.name=elasticsearch
-      - bootstrap.memory_lock=true
-      - xpack.security.enabled=false
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
       - "ELASTIC_PASSWORD=123456"
     networks:
-      elk:
-        ipv4_address: 172.25.0.2
+      - elk
     restart: always
 
   logstash:
@@ -38,8 +33,7 @@ services:
       LS_JAVA_OPTS: "-Xmx256m -Xms256m"
     user: "root"
     networks:
-      elk:
-        ipv4_address: 172.25.0.3
+      - elk
     depends_on:
       - elasticsearch
     restart: always
@@ -53,8 +47,7 @@ services:
     ports:
       - "5601:5601"
     networks:
-      elk:
-        ipv4_address: 172.25.0.4
+      - elk
     depends_on:
       - elasticsearch
     restart: always
@@ -72,30 +65,12 @@ services:
       - ./metricbeat/modules.d:/usr/share/metricbeat/modules.d:ro
       -  /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime:ro
     user: "root"
-    network_mode: host
+    network_mode: "bridge"
     depends_on:
       - elasticsearch
       - kibana
       - logstash
     command: -system.hostfs=/hostfs -e
-    restart: always
-  
-  nginx:
-    build:
-      context: nginx/
-    container_name: nginx
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      -  /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime:ro
-    ports:
-      - "80:80"
-      - "443:443"
-    networks:
-      elk:
-        ipv4_address: 172.25.0.9
-    depends_on:
-      - kibana
     restart: always
 
 
@@ -105,8 +80,8 @@ services:
     ports:
       - 9100:9100
     volumes:
-      - ./es-head/Gruntfile.js:/usr/src/app/Gruntfile.js
-      - ./es-head/app.js:/usr/src/app/_site/app.js
+      - ./es-head/Gruntfile.js:/usr/src/app/Gruntfile.js:ro
+      - ./es-head/app.js:/usr/src/app/_site/app.js:ro
 
   skywalking-oap:
     image: wutang/skywalking-oap:6.1.0
@@ -146,6 +121,4 @@ volumes:
 networks:
   elk:
     driver: bridge
-    ipam:
-      config:
-       - subnet: 172.25.0.0/16
+    external: false
