@@ -5,10 +5,10 @@ services:
     build:
       context: elasticsearch/
     container_name: es
+    privileged: true
     volumes:
       - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
-      - ./data/elasticsearch/data:/usr/share/elasticsearch/data
-      - ./data/elasticsearch/logs:/usr/share/elasticsearch/logs
+      - esdata:/usr/share/elasticsearch/data
     ports:
       - "9200:9200"
       - "9300:9300"
@@ -84,8 +84,10 @@ services:
       - ./es-head/app.js:/usr/src/app/_site/app.js:ro
 
   skywalking-oap:
-    image: wutang/skywalking-oap:6.1.0
+    image: apache/skywalking-oap-server:6.2.0
     container_name: skywalking-oap
+    environment:
+      - TZ=Asia/Shanghai
     networks:
       - elk
     depends_on:
@@ -100,7 +102,7 @@ services:
       - ./data/skywalking/config:/apache-skywalking-apm-bin/config:ro
 
   skywalking-ui:
-    image: wutang/skywalking-ui:6.1.0
+    image: apache/skywalking-ui:6.2.0
     container_name: skywalking-ui
     networks:
       - elk
@@ -112,7 +114,9 @@ services:
     ports:
       - 8080:8080
     environment:
+      security.user.admin.password: adminuser
       collector.ribbon.listOfServers: skywalking-oap:12800
+
 volumes:
   esdata:
     driver: local
