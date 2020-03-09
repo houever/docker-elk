@@ -1,4 +1,4 @@
-FROM docker.elastic.co/kibana/kibana:6.4.2
+FROM docker.elastic.co/kibana/kibana:6.8.7
 
 LABEL maintainer="349514537@qq.com"
 

@@ -1,4 +1,4 @@
-FROM docker.elastic.co/logstash/logstash:6.4.2
+FROM docker.elastic.co/logstash/logstash:6.8.7
 
 LABEL maintainer="349514537@qq.com"
 COPY ./config /usr/share/logstash/config
